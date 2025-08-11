@@ -1,0 +1,347 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String?
+  firstName     String
+  lastName      String
+  role          UserRole
+  status        UserStatus @default(PENDING)
+  avatar        String?
+  bio           String?
+  location      String?
+  website       String?
+  linkedinUrl   String?
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // OAuth fields
+  googleId      String?  @unique
+  linkedinId    String?  @unique
+
+  // Relations
+  entrepreneur  Entrepreneur?
+  investor      Investor?
+  pitches       Pitch[]
+  sentMessages      Message[] @relation("MessageSender")
+  receivedMessages  Message[] @relation("MessageRecipient")
+  sentConnections      Connection[] @relation("ConnectionRequester")
+  receivedConnections  Connection[] @relation("ConnectionRecipient")
+  sentNDARequests      NDARequest[] @relation("NDARequester")
+  receivedNDARequests  NDARequest[] @relation("NDARecipient")
+  notifications Notification[]
+  chatRooms    ChatRoomParticipant[]
+  readReceipts MessageReadReceipt[]
+
+  @@map("users")
+}
+
+model Entrepreneur {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  companyName   String
+  industry      String
+  fundingStage  FundingStage
+  fundingAmount Float?
+  equityOffered Float?
+  teamSize      Int
+  foundedYear   Int?
+  verified      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pitches       Pitch[]
+
+  @@map("entrepreneurs")
+}
+
+model Investor {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  investmentFocus   String[]
+  investmentRange   InvestmentRange
+  portfolioCompanies String[]
+  investmentThesis  String?
+  verificationStatus Boolean  @default(false)
+  verified          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("investors")
+}
+
+model Pitch {
+  id          String   @id @default(cuid())
+  title       String
+  summary     String
+  industry    Industry
+  fundingStage FundingStage
+  location    String?
+  traction    String?
+  businessPlan String?
+  pitchDeck   String? // URL to uploaded file
+  visibility  Visibility @default(PUBLIC)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  entrepreneurId String
+  entrepreneur   Entrepreneur @relation(fields: [entrepreneurId], references: [id], onDelete: Cascade)
+  
+  attachments PitchAttachment[]
+  chatRooms   ChatRoom[]
+  connections Connection[]
+  ndaRequests NDARequest[]
+
+  // Full-text search indexes for Postgres
+  @@fulltext([title, summary])
+  @@index([industry])
+  @@index([fundingStage])
+  @@index([location])
+  @@index([isActive])
+  @@index([createdAt])
+}
+
+model PitchAttachment {
+  id          String   @id @default(cuid())
+  pitchId     String
+  type        AttachmentType
+  url         String
+  filename    String
+  size        Int
+  uploadedAt  DateTime @default(now())
+
+  // Relations
+  pitch       Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+
+  @@map("pitch_attachments")
+}
+
+model ChatRoom {
+  id          String   @id @default(cuid())
+  type        ChatRoomType
+  pitchId     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  pitch       Pitch?   @relation(fields: [pitchId], references: [id])
+  participants ChatRoomParticipant[]
+  messages    Message[]
+
+  @@map("chat_rooms")
+}
+
+model ChatRoomParticipant {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  // Relations
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@map("chat_room_participants")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  roomId    String
+  senderId  String
+  content   String
+  type      MessageType @default(TEXT)
+  createdAt DateTime @default(now())
+
+  // Relations
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender    User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  attachments MessageAttachment[]
+  readReceipts MessageReadReceipt[]
+
+  @@map("messages")
+}
+
+model MessageAttachment {
+  id        String   @id @default(cuid())
+  messageId String
+  type      AttachmentType
+  url       String
+  filename  String
+  size      Int
+
+  // Relations
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@map("message_attachments")
+}
+
+model MessageReadReceipt {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+
+  // Relations
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@map("message_read_receipts")
+}
+
+model Connection {
+  id          String   @id @default(cuid())
+  requesterId String
+  recipientId String
+  pitchId     String?
+  message     String?
+  status      ConnectionStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  requester   User     @relation("ConnectionRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipient   User     @relation("ConnectionRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  pitch       Pitch?   @relation(fields: [pitchId], references: [id])
+
+  @@unique([requesterId, recipientId, pitchId])
+  @@map("connections")
+}
+
+model NDARequest {
+  id          String   @id @default(cuid())
+  requesterId String
+  recipientId String
+  pitchId     String
+  status      NDAStatus @default(PENDING)
+  message     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  requester   User     @relation("NDARequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipient   User     @relation("NDARecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  pitch       Pitch    @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, recipientId, pitchId])
+  @@map("nda_requests")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// Enums
+enum UserRole {
+  ENTREPRENEUR
+  INVESTOR
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  VERIFIED
+}
+
+enum FundingStage {
+  IDEA
+  MVP
+  EARLY_TRACTION
+  GROWTH
+  SCALE
+  EXIT
+}
+
+enum InvestmentRange {
+  UNDER_100K
+  HUNDRED_K_TO_500K
+  FIVE_HUNDRED_K_TO_1M
+  ONE_M_TO_5M
+  FIVE_M_TO_10M
+  OVER_10M
+}
+
+enum PitchVisibility {
+  PUBLIC
+  VERIFIED_INVESTORS
+  BY_REQUEST
+}
+
+enum PitchStatus {
+  ACTIVE
+  FUNDED
+  CLOSED
+}
+
+enum AttachmentType {
+  PDF
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+enum ChatRoomType {
+  DIRECT
+  PITCH_DISCUSSION
+}
+
+enum MessageType {
+  TEXT
+  FILE
+  NDA_REQUEST
+}
+
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  BLOCKED
+}
+
+enum NDAStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum NotificationType {
+  NEW_MESSAGE
+  CONNECTION_REQUEST
+  NDA_REQUEST
+  PITCH_VIEW
+  SYSTEM_UPDATE
+}

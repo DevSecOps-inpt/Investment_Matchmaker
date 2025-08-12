@@ -1,306 +1,201 @@
-# Investment Matchmaker - Local MVP
+# 🚀 Investment Matchmaker
 
-A matchmaking platform for founders and investors that runs entirely on localhost using Docker Compose.
+A local-only platform where entrepreneurs can post their startup ideas and investors can browse and chat with them in real-time.
 
-## 🎯 Purpose
+## Features
 
-Connect entrepreneurs with investors through:
-- **Pitch Posting**: Entrepreneurs can post investment pitches with media attachments
-- **Smart Matching**: Investors can search and filter pitches based on criteria
-- **Direct Communication**: Real-time chat system for discussions
-- **Connection Management**: Build professional relationships
-- **NDA Gate**: Optional NDA requests for sensitive information
+- **Startup Listings**: Entrepreneurs can post their startup ideas with descriptions, categories, and funding needs
+- **Real-time Chat**: WebSocket-based chat system for investors and entrepreneurs
+- **Room-based Messaging**: Isolated chat rooms for each startup-investor conversation
+- **Modern UI**: Clean, responsive React frontend with beautiful styling
+- **Local Development**: No external dependencies, runs entirely on your machine
 
-## 🏗️ Tech Stack (Local-Only)
-
-### Frontend
-- **Next.js 14** + **Tailwind CSS** for modern UI
-- **React Hook Form** for form handling
-- **Zustand** for state management
-- **Native WebSocket** for real-time communication
+## Tech Stack
 
 ### Backend
-- **NestJS** REST API with TypeScript
-- **Prisma ORM** for database operations
-- **JWT** authentication with httpOnly cookies
-- **ws** WebSocket server (self-hosted)
+- **FastAPI** - Modern Python web framework
+- **WebSockets** - Native real-time communication
+- **Pydantic** - Data validation and serialization
+- **In-memory Storage** - Simple data persistence (ready for SQLite extension)
 
-### Database & Services
-- **PostgreSQL 15** (Docker) with full-text search
-- **MailHog** (Docker) for development email testing
-- **Local file storage** via Multer to `uploads/` directory
+### Frontend
+- **React 18** - Modern React with hooks
+- **TypeScript** - Type-safe development
+- **React Router** - Client-side routing
+- **CSS Grid/Flexbox** - Responsive design
+- **Native WebSocket API** - Real-time communication
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
-- **Node.js 18+**
-- **Docker & Docker Compose**
-- **Git**
+- Python 3.8+
+- Node.js 16+
+- npm or yarn
 
-### 1. Clone & Setup
-```bash
-git clone <repository-url>
-cd webapp
+### Backend Setup
 
-# Windows
-setup.bat
+1. **Navigate to backend directory:**
+   ```bash
+   cd backend
+   ```
 
-# Unix/Linux/macOS
-chmod +x setup.sh
-./setup.sh
+2. **Install Python dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Start the FastAPI server:**
+   ```bash
+   python run.py
+   ```
+   
+   Or alternatively:
+   ```bash
+   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+   The backend will be available at `http://localhost:8000`
+
+### Frontend Setup
+
+1. **Navigate to frontend directory:**
+   ```bash
+   cd frontend
+   ```
+
+2. **Install Node.js dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the React development server:**
+   ```bash
+   npm start
+   ```
+
+   The frontend will be available at `http://localhost:3000`
+
+## Usage
+
+### For Entrepreneurs
+1. Visit the homepage and click "Post Your Startup"
+2. Fill out the form with your startup details
+3. Submit to create your listing
+4. Wait for investors to reach out via chat
+
+### For Investors
+1. Browse startup listings on the homepage
+2. Click on interesting startups to view details
+3. Click "Start Chat with Founder" to open a chat room
+4. Send messages and discuss investment opportunities
+
+## API Endpoints
+
+### REST API
+- `GET /` - API status
+- `GET /startups` - List all startups
+- `POST /startups` - Create a new startup
+- `GET /startups/{id}` - Get startup details
+- `POST /chat-rooms` - Create a chat room
+- `GET /chat-rooms/{id}/messages` - Get chat messages
+
+### WebSocket
+- `ws://localhost:8000/ws` - WebSocket endpoint for real-time chat
+
+## Project Structure
+
 ```
-
-### 2. Start Development
-```bash
-# Terminal 1: Backend + WebSocket
-cd backend
-npm run start:dev
-
-# Terminal 2: Frontend
-cd frontend
-npm run dev
-```
-
-### 3. Access Services
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:4000
-- **WebSocket**: ws://localhost:4001
-- **Database**: localhost:5432
-- **MailHog UI**: http://localhost:8025
-
-## 📁 Project Structure
-
-```
-webapp/
-├── backend/                 # NestJS API server
+├── backend/
+│   ├── main.py              # FastAPI application with WebSocket support
+│   ├── run.py               # Development server runner
+│   └── requirements.txt     # Python dependencies
+├── frontend/
+│   ├── public/
+│   │   └── index.html       # Main HTML file
 │   ├── src/
-│   │   ├── auth/          # JWT authentication
-│   │   ├── users/         # User management
-│   │   ├── pitches/       # Pitch CRUD operations
-│   │   ├── chat/          # WebSocket chat system
-│   │   ├── connections/   # User connections
-│   │   ├── search/        # Postgres full-text search
-│   │   ├── upload/        # File upload handling
-│   │   └── admin/         # Admin operations
-│   ├── prisma/            # Database schema & migrations
-│   └── uploads/           # Local file storage
-├── frontend/               # Next.js application
-│   ├── src/
-│   │   ├── app/           # App router pages
-│   │   ├── components/    # Reusable UI components
-│   │   ├── lib/           # Utility functions
-│   │   └── store/         # Zustand state management
-└── docker-compose.yml      # Postgres + MailHog services
+│   │   ├── components/      # React components
+│   │   │   ├── StartupList.tsx
+│   │   │   ├── StartupDetail.tsx
+│   │   │   ├── ChatRoom.tsx
+│   │   │   └── CreateStartup.tsx
+│   │   ├── App.tsx          # Main app component
+│   │   ├── App.css          # Main styles
+│   │   ├── index.tsx        # App entry point
+│   │   └── index.css        # Global styles
+│   ├── package.json         # Node.js dependencies
+│   └── tsconfig.json        # TypeScript configuration
+└── README.md                # This file
 ```
 
-## 🔐 Authentication
+## Development
 
-- **JWT tokens** stored in httpOnly cookies
-- **Role-based access**: Entrepreneur, Investor, Admin
-- **OAuth providers** can be enabled later (currently disabled for MVP)
-- **Rate limiting** on auth routes (5 requests per minute)
+### Adding New Features
+- **Backend**: Add new endpoints in `main.py` and extend the data models
+- **Frontend**: Create new components in `src/components/` and add routes in `App.tsx`
 
-## 💾 File Storage
+### Database Integration
+The current implementation uses in-memory storage. To add SQLite:
 
-- **Local disk storage** via Multer
-- **Static serving** at `/uploads/*` by NestJS
-- **MIME type validation** for security
-- **File size limit**: 10MB per file
-- **Supported types**: Images, PDFs, Documents, Videos
-
-## 🔍 Search & Discovery
-
-- **Postgres full-text search** on pitch title and summary
-- **Industry filtering** by investment focus
-- **Funding stage matching** for investor preferences
-- **Location-based search** for geographic preferences
-- **Visibility rules**: Public, Verified Investors, By Request
-
-## 💬 Real-time Chat
-
-- **WebSocket rooms** for pitch discussions and direct messages
-- **Message persistence** in PostgreSQL
-- **Typing indicators** and read receipts
-- **Room-based broadcasting** for efficient messaging
-- **JWT authentication** on WebSocket connection (optional)
-
-## 📧 Email System
-
-- **MailHog** for development email testing
-- **SMTP configuration** for production readiness
-- **Notification emails** for:
-  - Connection requests
-  - NDA requests
-  - New messages
-  - System updates
-
-## 🛡️ Security Features
-
-- **CORS** locked to localhost:3000
-- **Rate limiting** on sensitive routes
-- **JWT validation** on protected endpoints
-- **File upload validation** with MIME whitelisting
-- **SQL injection protection** via Prisma ORM
-
-## 🗄️ Database Schema
-
-### Core Models
-- **Users**: Entrepreneurs, Investors, Admins
-- **Pitches**: Investment opportunities with metadata
-- **ChatRooms**: Real-time communication channels
-- **Connections**: Professional relationships
-- **Messages**: Chat history and persistence
-- **Notifications**: System and user notifications
-
-### Full-Text Search Indexes
-```sql
--- Pitch search optimization
-@@fulltext([title, summary])
-@@index([industry])
-@@index([fundingStage])
-@@index([location])
-@@index([isActive])
-@@index([createdAt])
-```
-
-## 🚫 What's NOT Included (MVP Scope)
-
-- ❌ **Cloud storage** (S3, Cloudinary) - Local disk only
-- ❌ **Redis pub/sub** - Single process WebSocket
-- ❌ **Elasticsearch** - Postgres full-text search
-- ❌ **Hosted deployment** - Local development only
-- ❌ **Production email** - MailHog for testing
-
-## 🔧 Development Commands
-
-### Backend
-```bash
-cd backend
-npm run start:dev          # Development server
-npm run build              # Build for production
-npm run start:prod         # Production server
-npx prisma migrate dev     # Run migrations
-npx prisma studio          # Database GUI
-```
-
-### Frontend
-```bash
-cd frontend
-npm run dev                # Development server
-npm run build              # Build for production
-npm run start              # Production server
-npm run lint               # ESLint checking
-```
-
-### Database
-```bash
-# Reset database
-cd backend
-npx prisma migrate reset
-
-# Seed data (if available)
-npm run seed
-```
-
-## 🌐 API Endpoints
+1. Install `sqlalchemy` and `alembic`
+2. Create database models
+3. Replace in-memory storage with database operations
+4. Add database migrations
 
 ### Authentication
-- `POST /auth/register` - User registration
-- `POST /auth/login` - User login
-- `POST /auth/refresh` - Refresh JWT token
+To add user authentication:
 
-### Pitches
-- `GET /pitches` - Search and filter pitches
-- `POST /pitches` - Create new pitch
-- `PUT /pitches/:id` - Update pitch
-- `DELETE /pitches/:id` - Delete pitch
+1. Implement JWT token generation and validation
+2. Add login/register endpoints
+3. Create user management components
+4. Replace placeholder sender IDs with actual user IDs
 
-### Chat
-- `GET /chat/rooms` - User's chat rooms
-- `GET /chat/rooms/:id/messages` - Chat history
-- `POST /chat/rooms` - Create chat room
-
-### Uploads
-- `POST /storage/upload` - File upload
-- `GET /uploads/*` - Static file serving
-
-## 📱 Frontend Features
-
-- **Responsive design** with Tailwind CSS
-- **Real-time updates** via WebSocket
-- **Form validation** with React Hook Form
-- **State management** with Zustand
-- **File upload** with drag & drop support
-- **Search filters** with instant results
-
-## 🐳 Docker Services
-
-### PostgreSQL
-- **Port**: 5432
-- **Database**: app
-- **User**: app
-- **Password**: app
-- **Volume**: Persistent data storage
-
-### MailHog
-- **SMTP Port**: 1025
-- **Web UI Port**: 8025
-- **Purpose**: Email testing and debugging
-
-## 🔄 Environment Variables
-
-The setup scripts create a root `.env` file with:
-- Database connection string
-- JWT secrets (development only)
-- WebSocket configuration
-- SMTP settings for MailHog
-- Rate limiting parameters
-- Frontend public URLs
-
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
-1. **Port conflicts**: Ensure ports 3000, 4000, 4001, 5432, 8025 are free
-2. **Database connection**: Wait for Docker services to fully start
-3. **File uploads**: Check `uploads/` directory permissions
-4. **WebSocket connection**: Verify backend is running on port 4001
+**Backend won't start:**
+- Check Python version (3.8+ required)
+- Verify all dependencies are installed
+- Check if port 8000 is available
 
-### Reset Everything
-```bash
-# Stop all services
-docker-compose down -v
+**Frontend won't start:**
+- Ensure Node.js 16+ is installed
+- Run `npm install` to install dependencies
+- Check if port 3000 is available
 
-# Remove uploads
-rm -rf uploads backend/uploads
+**WebSocket connection fails:**
+- Ensure backend is running on port 8000
+- Check browser console for connection errors
+- Verify CORS settings in backend
 
-# Re-run setup
-./setup.sh  # or setup.bat on Windows
-```
+**Chat not working:**
+- Check WebSocket connection status
+- Verify room ID is correct
+- Check browser console for errors
 
-## 📈 Next Steps (Post-MVP)
+## Future Enhancements
 
-- **Cloud deployment** (AWS, Vercel, Railway)
-- **Redis integration** for WebSocket scaling
-- **Elasticsearch** for advanced search
-- **S3/Cloudinary** for file storage
-- **Production email** (SendGrid, AWS SES)
-- **Analytics** and user behavior tracking
-- **Mobile app** (React Native)
-- **Advanced matching algorithms**
+- [ ] SQLite database integration
+- [ ] User authentication and profiles
+- [ ] File uploads for startup documents
+- [ ] Email notifications
+- [ ] Advanced search and filtering
+- [ ] Investment tracking
+- [ ] Due diligence tools
+- [ ] Mobile app
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test locally with Docker
+4. Test thoroughly
 5. Submit a pull request
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License.
+This project is open source and available under the MIT License.
 
 ---
 
-**Built with ❤️ for the startup ecosystem**
+**Happy investing! 🚀💰**

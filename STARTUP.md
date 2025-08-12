@@ -1,140 +1,118 @@
-# 🚀 Quick Startup Guide
+# 🚀 Investment Matchmaker - Startup Guide
 
-## First Time Setup
+## Quick Start (Windows)
 
-### 1. Prerequisites
-- **Node.js 18+** installed
-- **Docker & Docker Compose** installed
-- **Git** installed
+### Option 1: Use the Batch Files (Recommended)
 
-### 2. Initial Setup
-```bash
-# Windows
-setup.bat
+1. **Start the Backend:**
+   - Double-click `start-backend.bat`
+   - Wait for the message "Application startup complete"
+   - Keep this window open
 
-# Unix/Linux/macOS
-chmod +x setup.sh
-./setup.sh
-```
-
-This will:
-- Create `.env` file with local configuration
-- Start PostgreSQL and MailHog via Docker
-- Install dependencies for both frontend and backend
-- Run database migrations
-- Create uploads directories
-
-## Daily Development
-
-### Option 1: Use Development Scripts (Recommended)
-```bash
-# Windows
-dev.bat
-
-# Unix/Linux/macOS
-./dev.sh
-```
+2. **Start the Frontend (in a new terminal):**
+   - Double-click `start-frontend.bat`
+   - Wait for the browser to open automatically
+   - The app will be available at `http://localhost:3000`
 
 ### Option 2: Manual Startup
-```bash
-# Terminal 1: Backend + WebSocket
-cd backend
-npm run start:dev
 
-# Terminal 2: Frontend
+#### Backend Setup
+```bash
+cd backend
+pip install -r requirements.txt
+python run.py
+```
+
+#### Frontend Setup
+```bash
 cd frontend
-npm run dev
+npm install
+npm start
 ```
 
-### Option 3: Root Package Scripts
-```bash
-# Start both services
-npm run dev
+## What You'll See
 
-# Or start individually
-npm run dev:backend
-npm run dev:frontend
-```
+### Backend (Port 8000)
+- FastAPI server running with WebSocket support
+- API endpoints for startups and chat rooms
+- Real-time messaging infrastructure
 
-## Access Your Services
+### Frontend (Port 3000)
+- Modern React application
+- Startup listings and creation forms
+- Real-time chat interface
+- Responsive design for all devices
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:4000
-- **WebSocket**: ws://localhost:4001
-- **Database**: localhost:5432
-- **MailHog UI**: http://localhost:8025
+## Testing the Platform
 
-## Quick Commands
+1. **Create a Startup:**
+   - Click "Post Your Startup" on the homepage
+   - Fill out the form with your idea
+   - Submit to create your listing
 
-### Database Operations
-```bash
-# View database in browser
-npm run db:studio
+2. **Browse Startups:**
+   - View all posted startups on the homepage
+   - Click on any startup to see details
 
-# Run migrations
-npm run db:migrate
-
-# Reset database
-cd backend
-npx prisma migrate reset
-```
-
-### Stop Services
-```bash
-# Stop Docker services
-docker-compose down
-
-# Stop development servers
-# Use Ctrl+C in terminal windows
-```
+3. **Start a Chat:**
+   - Click "Start Chat with Founder" on any startup
+   - Enter messages in the chat room
+   - Experience real-time communication
 
 ## Troubleshooting
 
-### Port Already in Use
-```bash
-# Check what's using the port
-netstat -ano | findstr :3000  # Windows
-lsof -i :3000                 # Unix/Linux/macOS
+### Backend Issues
+- **Port 8000 in use:** Close other applications using port 8000
+- **Python not found:** Install Python 3.8+ and add to PATH
+- **Dependencies error:** Run `pip install -r requirements.txt` again
 
-# Kill the process or use different ports
+### Frontend Issues
+- **Port 3000 in use:** Close other applications using port 3000
+- **Node.js not found:** Install Node.js 16+ and add to PATH
+- **Dependencies error:** Run `npm install` again
+
+### WebSocket Issues
+- **Chat not working:** Ensure backend is running on port 8000
+- **Connection errors:** Check browser console for WebSocket errors
+- **CORS issues:** Verify backend CORS settings
+
+## Development
+
+### Adding Features
+- **Backend:** Modify `backend/main.py`
+- **Frontend:** Modify files in `frontend/src/components/`
+- **Styling:** Modify `frontend/src/App.css`
+
+### Database Integration
+The current version uses in-memory storage. To add SQLite:
+1. Install `sqlalchemy` and `alembic`
+2. Create database models
+3. Replace in-memory operations
+
+### Authentication
+To add user login:
+1. Implement JWT tokens
+2. Add login/register endpoints
+3. Create user management components
+
+## File Structure
+```
+webapp/
+├── backend/           # FastAPI server
+├── frontend/          # React application
+├── start-backend.bat  # Windows backend starter
+├── start-frontend.bat # Windows frontend starter
+└── README.md          # Full documentation
 ```
 
-### Database Connection Issues
-```bash
-# Restart Docker services
-docker-compose restart
+## Support
 
-# Check if PostgreSQL is running
-docker-compose ps
-```
-
-### File Upload Issues
-```bash
-# Check uploads directory exists
-ls uploads/
-ls backend/uploads/
-
-# Recreate if missing
-mkdir -p uploads backend/uploads
-```
-
-## Development Tips
-
-1. **Hot Reload**: Both frontend and backend support hot reloading
-2. **Database Changes**: Use Prisma Studio for visual database management
-3. **Email Testing**: Use MailHog UI to see all sent emails
-4. **File Storage**: Uploads are stored locally in `uploads/` directory
-5. **WebSocket**: Backend automatically starts WebSocket server on port 4001
-
-## Next Steps
-
-After getting the basic setup running:
-1. Create your first user account
-2. Post a test pitch
-3. Test the search functionality
-4. Try the real-time chat
-5. Upload some test files
+If you encounter issues:
+1. Check the console/terminal for error messages
+2. Verify both services are running
+3. Check that ports 8000 and 3000 are available
+4. Ensure all dependencies are installed
 
 ---
 
-**Need help?** Check the main README.md for detailed documentation.
+**Happy investing! 🚀💰**

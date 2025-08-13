@@ -1,11 +1,8 @@
-import { z } from "zod";
-import { StartupSchema } from "./schemas";
+import { StartupListSchema, Startup } from "./schemas";
+import { http } from "../../../lib/http";
+import { parseOrThrow } from "../../../lib/zod-helpers";
 
-export async function getStartups() {
-  const response = await fetch('/api/startups');
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  const data = await response.json();
-  return z.array(StartupSchema).parse(data);
+export async function getStartups(): Promise<Startup[]> {
+  const data = await http.get<unknown>("/api/startups");
+  return parseOrThrow<Startup[]>(StartupListSchema, data);
 }

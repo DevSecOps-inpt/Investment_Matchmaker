@@ -51,7 +51,11 @@ const StartupList: React.FC = () => {
       const startupData = await getStartups();
       setStartups(startupData);
     } catch (error: any) {
-      setError(error.message || 'Failed to fetch startups');
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Failed to fetch startups');
+      }
       console.error('Error fetching startups:', error);
     } finally {
       setLoading(false);

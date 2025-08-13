@@ -9,13 +9,13 @@ import uuid
 app = FastAPI(title="Investment Matchmaker API", version="1.0.0")
 
 # CORS configuration for local development
-origins = ["http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # More permissive for development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Data models
@@ -53,6 +53,42 @@ class ChatRoom(BaseModel):
 startups: Dict[str, Startup] = {}
 chat_rooms: Dict[str, ChatRoom] = {}
 messages: Dict[str, List[Message]] = {}
+
+# Add some sample startups
+sample_startups = [
+    {
+        "title": "EcoTech Solutions",
+        "description": "Developing sustainable energy solutions for urban environments",
+        "owner": "Sarah Johnson",
+        "category": "CleanTech",
+        "funding_needed": 500000
+    },
+    {
+        "title": "HealthAI",
+        "description": "AI-powered health diagnostics and monitoring platform",
+        "owner": "Dr. Michael Chen",
+        "category": "Healthcare",
+        "funding_needed": 750000
+    },
+    {
+        "title": "SmartFarm",
+        "description": "IoT solutions for precision agriculture and farm management",
+        "owner": "Emma Davis",
+        "category": "AgriTech",
+        "funding_needed": 300000
+    }
+]
+
+# Initialize sample data
+for startup_data in sample_startups:
+    startup_id = str(uuid.uuid4())
+    new_startup = Startup(
+        id=startup_id,
+        owner_id=f"entrepreneur_{startup_id[:8]}",
+        created_at=datetime.now().isoformat(),
+        **startup_data
+    )
+    startups[startup_id] = new_startup
 
 # WebSocket connection manager
 class ConnectionManager:
@@ -95,9 +131,29 @@ manager = ConnectionManager()
 async def root():
     return {"message": "Investment Matchmaker API", "status": "running"}
 
-@app.get("/startups", response_model=List[Startup])
+from fastapi.responses import JSONResponse
+
+@app.get("/startups")
 async def list_startups():
-    return list(startups.values())
+    startup_list = list(startups.values())
+    print("Returning startups:", startup_list)  # Debug log
+    
+    # Convert to JSON-serializable format
+    startup_data = [
+        {
+            "id": s.id,
+            "title": s.title,
+            "description": s.description,
+            "owner": s.owner,
+            "category": s.category,
+            "funding_needed": s.funding_needed,
+            "created_at": s.created_at,
+            "owner_id": s.owner_id
+        }
+        for s in startup_list
+    ]
+    
+    return JSONResponse(content=startup_data)
 
 @app.post("/startups", response_model=Startup)
 async def create_startup(startup: StartupCreate):

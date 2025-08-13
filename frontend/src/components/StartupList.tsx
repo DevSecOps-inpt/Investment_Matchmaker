@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
-type Startup = {
-  id: string;
-  title: string;
-  description: string;
-  owner: string;
-  owner_id: string;
-  category: string;
-  created_at: string;
-  funding_needed: number;
-}
+import { getStartups } from '../features/startups/api/startups.client';
+import type { Startup } from '../features/startups/api/schemas';
 
 interface ChatRoom {
   id: string;
@@ -57,23 +48,7 @@ const StartupList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/startups', {
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (!Array.isArray(data)) {
-        throw new Error('Expected an array of startups');
-      }
-
-      const startupData = data as Startup[];
+      const startupData = await getStartups();
       setStartups(startupData);
     } catch (error: any) {
       setError(error.message || 'Failed to fetch startups');
@@ -135,16 +110,16 @@ const StartupList: React.FC = () => {
                 <p className="startup-card-description">{startup.description}</p>
                 <div className="startup-card-tags">
                   <span className="startup-tag">{startup.category}</span>
-                  {startup.funding_needed > 0 && (
+                  {startup.fundingNeeded > 0 && (
                     <span className="startup-tag funding">
-                      ${startup.funding_needed.toLocaleString()} needed
+                      ${startup.fundingNeeded.toLocaleString()} needed
                     </span>
                   )}
                 </div>
               </div>
               <div className="startup-card-meta">
-                <span>By {startup.owner}</span>
-                <span>{formatDate(startup.created_at)}</span>
+                <span>By {startup.ownerName}</span>
+                <span>{formatDate(startup.createdAt)}</span>
               </div>
               <div className="startup-card-actions">
                 <Link
